@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Crop Health Dashboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef5ef;color:#172018}
+.wrap{max-width:1100px;margin:auto;padding:24px}.header{background:#fff;border:1px solid #dce5dd;border-radius:18px;padding:24px;margin-bottom:16px}
+h1{margin:0;font-size:28px}.sub{color:#68736a;margin-top:7px}.grid{display:grid;gap:14px}.top{grid-template-columns:2fr repeat(3,1fr)}.sensors{grid-template-columns:repeat(4,1fr)}.main{grid-template-columns:1.3fr .7fr}
+.card{background:#fff;border:1px solid #dce5dd;border-radius:16px;padding:18px}.label{font-size:12px;color:#68736a}.value{font-size:27px;font-weight:750;margin:8px 0}.pill{display:inline-block;background:#e4f3e8;color:#267043;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:bold;cursor:pointer;background:#287746;color:white;margin:5px 5px 0 0}button.secondary{background:#edf2ed;color:#26352b}
+.ring{width:105px;height:105px;border-radius:50%;background:conic-gradient(#287746 0 86%,#e5ebe6 86%);display:grid;place-items:center}.ring span{width:78px;height:78px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:20px;font-weight:bold}
+.health{display:flex;align-items:center;gap:18px;margin-top:15px}.result{background:#e7f4ea;border-radius:13px;padding:15px;margin-top:18px}.alert{background:#fff6e5;border:1px solid #f0dfb8;border-radius:12px;padding:13px;margin-top:14px}
+.chart{height:170px;display:flex;align-items:end;gap:8px;padding:15px 4px 0}.bar{flex:1;background:#287746;border-radius:6px 6px 2px 2px;min-width:8px}.bar:hover{opacity:.75}
+.progress{height:9px;background:#e7ece8;border-radius:10px;overflow:hidden;margin-top:7px}.fill{height:100%;background:#287746}
+@media(max-width:800px){.top,.sensors,.main{grid-template-columns:1fr 1fr}.top>:first-child,.main>:first-child{grid-column:1/-1}}
+@media(max-width:520px){.top,.sensors,.main{grid-template-columns:1fr}.top>:first-child,.main>:first-child{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="header">
+<h1>🌱 AI Crop Health Dashboard</h1>
+<div class="sub">IoT Monitoring + Computer Vision Disease Detection</div>
+<button id="scan">📷 Run AI Leaf Scan</button>
+<button class="secondary" id="refresh">↻ Refresh Sensors</button>
+</header>
+
+<section class="grid top">
+<div class="card"><div class="label">PROJECT</div><div class="value" style="font-size:21px">Automatic Crop Disease Detection & Monitoring</div><span class="pill">System Online</span></div>
+<div class="card"><div class="label">CROP</div><div class="value" style="font-size:21px">Tomato</div><span class="pill">Healthy</span></div>
+<div class="card"><div class="label">AI CONFIDENCE</div><div class="value" id="confidence">94%</div><div class="sub">Computer vision</div></div>
+<div class="card"><div class="label">HEALTH SCORE</div><div class="value">86%</div><div class="sub">Good condition</div></div>
+</section>
+
+<br>
+<section class="grid sensors">
+<div class="card"><div class="label">🌡 TEMPERATURE</div><div class="value" id="temp">28.4°C</div></div>
+<div class="card"><div class="label">💧 SOIL MOISTURE</div><div class="value" id="soil">62%</div></div>
+<div class="card"><div class="label">💦 HUMIDITY</div><div class="value" id="humidity">71%</div></div>
+<div class="card"><div class="label">☀️ LIGHT INTENSITY</div><div class="value" id="light">740 lx</div></div>
+</section>
+
+<br>
+<section class="grid main">
+<div class="card">
+<h3>Sensor Monitoring</h3><div class="sub">Recent soil-moisture readings</div>
+<div class="chart" id="chart"></div>
+<div style="display:flex;justify-content:space-between" class="label"><span>10 min ago</span><span>Now</span></div>
+<br>
+<div class="label">Soil Moisture <b id="soil2">62%</b></div><div class="progress"><div class="fill" id="soilbar" style="width:62%"></div></div>
+<br>
+<div class="label">Humidity <b>71%</b></div><div class="progress"><div class="fill" style="width:71%"></div></div>
+</div>
+
+<div class="card">
+<h3>🌿 Crop Health</h3>
+<div class="health"><div class="ring"><span>86%</span></div><div><b>Good condition</b><div class="sub">No critical stress detected</div></div></div>
+<div class="result"><div class="label">LATEST AI RESULT</div><strong id="disease">Healthy Leaf</strong><div class="sub" id="scanText">Confidence: 94% · No disease pattern detected</div></div>
+</div>
+</section>
+
+<br>
+<section class="card">
+<h3>🚨 Alerts & Recommendations</h3>
+<div class="alert" id="alert">All monitored conditions are currently within the demonstration range.</div>
+<div class="sub" style="margin-top:10px">Recommendation: Continue monitoring soil moisture and inspect leaves if AI confidence falls below 80%.</div>
+</section>
+</div>
+
+<script>
+const chart=document.getElementById("chart");
+[58,61,60,64,62,65,63,62,64,62].forEach(v=>{let b=document.createElement("div");b.className="bar";b.style.height=(v*1.6)+"px";chart.appendChild(b)});
+document.getElementById("refresh").onclick=()=>{
+ let t=(27.5+Math.random()*2).toFixed(1),s=Math.round(55+Math.random()*15),h=Math.round(66+Math.random()*10),l=Math.round(650+Math.random()*180);
+ document.getElementById("temp").textContent=t+"°C";document.getElementById("soil").textContent=s+"%";document.getElementById("soil2").textContent=s+"%";document.getElementById("humidity").textContent=h+"%";document.getElementById("light").textContent=l+" lx";document.getElementById("soilbar").style.width=s+"%";
+ document.getElementById("alert").textContent=s<58?"⚠️ Soil moisture is getting low. Consider irrigation.":"All monitored conditions are currently within the demonstration range.";
+};
+document.getElementById("scan").onclick=()=>{
+ let c=Math.round(88+Math.random()*10);
+ document.getElementById("confidence").textContent=c+"%";document.getElementById("disease").textContent="Healthy Leaf";document.getElementById("scanText").textContent="Confidence: "+c+"% · No disease pattern detected";
+};
+</script>
+</body>
+</html>
